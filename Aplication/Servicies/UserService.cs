@@ -55,14 +55,19 @@ namespace Aplication.Servicies
         public UserModel? CheckCredentials(CredentialsRequest credentials)
         {
             User? user = Get(credentials.UserName);
-            if (user.Password == credentials.Password)
+
+            // Verificación de nulidad
+            if (user != null && user.Password == credentials.Password)
+            {
                 return new UserModel()
                 {
-                  
+                    UserName = user.Name,      // Inicializar UserName aquí
+                    Password = user.Password,   // Inicializar Password aquí
                     Email = user.Email,
                     Id = user.Id,
                     Name = user.Name,
                 };
+            }
             return null;
         }
     }
