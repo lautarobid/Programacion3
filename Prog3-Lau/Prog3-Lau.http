@@ -1,0 +1,6 @@
+@Prog3_Lau_HostAddress = http://localhost:5082
+
+GET {{Prog3_Lau_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
