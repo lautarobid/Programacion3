@@ -3,6 +3,7 @@ using Domain.Interfaces;
 using Infrastructure.Repositories;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,14 +17,17 @@ builder.Services.AddSwaggerGen();
 // Configurar el contexto para uso con SQLite
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ServiUserDbConnection")));
+
+// Registrar servicios y repositorios
 builder.Services.AddScoped<UserService>();
-// Registrar IUserRepository y su implementación (UserRepository)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<BillService>();
-// Registrar IBillRepository y BillService
 builder.Services.AddScoped<IBillRepository, BillRepository>();
 
+// Registrar TruckDriverService y su repositorio
+builder.Services.AddScoped<TruckDriverService>();
+builder.Services.AddScoped<ITruckDriverRepository, TruckDriverRepository>();
 
 // Construir la aplicación después de registrar todos los servicios
 var app = builder.Build();
