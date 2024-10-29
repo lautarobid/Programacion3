@@ -15,6 +15,7 @@ namespace Infrastructure
         public DbSet<User> Users { get; set; }  // Asegúrate de que es plural
         public DbSet<Bill> Bills { get; set; }  // Agrega esta línea para las facturas
         public DbSet<Client> Clients { get; set; } // DbSet para clientes
+        public DbSet<TruckDriver> TruckDrivers { get; set; } // Agrega esta línea
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
             : base(options)
         {
