@@ -13,7 +13,7 @@ namespace Infrastructure
     public class ApplicationDBContext : DbContext
     {
         public DbSet<User> Users { get; set; }  // Asegúrate de que es plural
-
+        public DbSet<Bill> Bills { get; set; }  // Agrega esta línea para las facturas
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
             : base(options)
         {

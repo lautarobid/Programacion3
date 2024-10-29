@@ -1,10 +1,8 @@
-
 using Aplication.Servicies;
 using Domain.Interfaces;
-using Infrastructure;
 using Infrastructure.Repositories;
+using Infrastructure;
 using Microsoft.EntityFrameworkCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +23,27 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // Registrar UserService
 builder.Services.AddScoped<UserService>();
 
+// Registrar IUserRepository y su implementación (UserRepository)
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Registrar IBillRepository y BillService
+builder.Services.AddScoped<IBillRepository, BillRepository>();
+builder.Services.AddScoped<BillService>();
+// Construir la aplicación después de registrar todos los servicios
 var app = builder.Build();
+
+// Registrar UserService
+builder.Services.AddScoped<UserService>();
+
+// Registrar IBillRepository y BillService
+builder.Services.AddScoped<IBillRepository, BillRepository>();
+builder.Services.AddScoped<BillService>();
+
+// Configurar el pipeline de solicitudes HTTP.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // Configurar el pipeline de solicitudes HTTP.
 if (app.Environment.IsDevelopment())
