@@ -5,12 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Prog3_Lau.Controllers
-
-{
+{ 
     [Route("api/[controller]")]
     [ApiController]
-
-    public class BillController : Controller
+    public class BillController : ControllerBase
     {
         private readonly BillService _billService;
 
@@ -19,106 +17,53 @@ namespace Prog3_Lau.Controllers
             _billService = billService;
         }
 
-        // GET: BillController
+        // GET: api/Bill
         [HttpGet]
-        public ActionResult Index()
+        public IActionResult GetAll()
         {
             var bills = _billService.GetAllBills();
-            return View(bills);
+            return Ok(bills);
         }
 
-        // GET: BillController/Details/5
-        [HttpGet]
-        public ActionResult Details(int id)
+        // GET: api/Bill/5
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
         {
             var bill = _billService.GetBillById(id);
             if (bill == null)
                 return NotFound();
 
-            return View(bill);
+            return Ok(bill);
         }
 
-        // GET: BillController/Create
-        [HttpGet]
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: BillController/Create
+        // POST: api/Bill
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(BillForCreationDto billDto)
+        public IActionResult Create(BillForCreationDto billDto)
         {
-            try
-            {
-                _billService.AddBill(billDto);
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View(billDto);
-            }
+            var id = _billService.AddBill(billDto);
+            return CreatedAtAction(nameof(GetById), new { id }, billDto);
         }
 
-        // GET: BillController/Edit/5
-        [HttpGet]
-        public ActionResult Edit(int id)
+        // PUT: api/Bill/5
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, BillForUpdateDto billDto)
         {
-            var bill = _billService.GetBillById(id);
-            if (bill == null)
+            var result = _billService.UpdateBill(id, billDto);
+            if (!result)
                 return NotFound();
 
-            return View(bill);
+            return NoContent();
         }
 
-        // POST: BillController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, BillForUpdateDto billDto)
+        // DELETE: api/Bill/5
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
         {
-            try
-            {
-                var result = _billService.UpdateBill(id, billDto);
-                if (!result)
-                    return NotFound();
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View(billDto);
-            }
-        }
-
-        // GET: BillController/Delete/5
-        [HttpGet]
-        public ActionResult Delete(int id)
-        {
-            var bill = _billService.GetBillById(id);
-            if (bill == null)
+            var result = _billService.DeleteBill(id);
+            if (!result)
                 return NotFound();
 
-            return View(bill);
-        }
-
-        // POST: BillController/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int id)
-        {
-            try
-            {
-                var result = _billService.DeleteBill(id);
-                if (!result)
-                    return NotFound();
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return NoContent();
         }
     }
 }
