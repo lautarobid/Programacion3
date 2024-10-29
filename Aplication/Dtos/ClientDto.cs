@@ -1,25 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace Domain.Entities
+namespace Aplication.Dtos
+{ 
+    public class ClientDto
+ 
+        // Propiedades necesarias para transferir datos
 {
-    public class User
-    {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+            public required string IdClient { get; set; }
+
+        [Required]
         public required string Name { get; set; }
+
+        [Required]
         public required string LastName { get; set; }
+
+        [Required, EmailAddress]
         public required string Email { get; set; }
 
+        [Required]
         public required string Password { get; set; }
 
-
+        public required string PayState { get; set; }
     }
-   
+
 }
