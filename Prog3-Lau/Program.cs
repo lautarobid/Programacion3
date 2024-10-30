@@ -29,6 +29,10 @@ builder.Services.AddScoped<IBillRepository, BillRepository>();
 builder.Services.AddScoped<TruckDriverService>();
 builder.Services.AddScoped<ITruckDriverRepository, TruckDriverRepository>();
 
+// Registrar TripService y su repositorio
+builder.Services.AddScoped<TripService>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+
 // Construir la aplicación después de registrar todos los servicios
 var app = builder.Build();
 
