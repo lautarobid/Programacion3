@@ -33,8 +33,8 @@ namespace Application.Services
             return clients.Select(ConvertToDto).ToList();
         }
 
-        // Método para agregar un nuevo cliente utilizando ClientAdd
-        public void AddClient(ClientAdd clientAdd)
+        // Método para agregar un nuevo cliente y retornar su ID
+        public string AddClient(ClientAdd clientAdd)
         {
             var client = new Client
             {
@@ -42,11 +42,12 @@ namespace Application.Services
                 Name = clientAdd.Name,
                 LastName = clientAdd.LastName,
                 Email = clientAdd.Email,
-                Password = clientAdd.Password,  // Asigna la contraseña desde ClientAdd
-                Bill = new Bill { PayState = clientAdd.PayState } // Estado de pago inicial
+                Password = clientAdd.Password,
+                Bill = new Bill(clientAdd.Mount) { PayState = clientAdd.PayState }
             };
 
             _clientRepository.Add(client);
+            return client.IdClient;
         }
 
         // Método para actualizar un cliente existente
@@ -72,6 +73,27 @@ namespace Application.Services
 
             _clientRepository.Delete(client);
             return true;
+        }
+
+        // Método para obtener los viajes de un cliente por su ID
+        public List<Trip> GetClientTrips(string idClient)
+        {
+            var client = _clientRepository.GetById(idClient);
+            if (client == null)
+                throw new KeyNotFoundException($"Client with ID {idClient} was not found.");
+
+            return client.Trips;
+        }
+
+        // Método para agregar un viaje a un cliente
+        public void AddTripToClient(string clientId, Trip newTrip)
+        {
+            var client = _clientRepository.GetById(clientId);
+            if (client == null)
+                throw new KeyNotFoundException($"Client with ID {clientId} was not found.");
+
+            client.Trips.Add(newTrip);
+            _clientRepository.Update(client); // Guarda los cambios en el repositorio
         }
 
         // Método privado para convertir un Client a ClientDto

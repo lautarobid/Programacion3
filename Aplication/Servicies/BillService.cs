@@ -47,10 +47,10 @@ namespace Aplication.Servicies
         // Método para agregar una nueva factura
         public int AddBill(BillForCreationDto billDto)
         {
-            var bill = new Bill
+            // Crea una nueva instancia de Bill pasando el monto al constructor
+            var bill = new Bill(billDto.Mount)
             {
-                Mount = billDto.Mount,
-                PayState = billDto.PayState
+                PayState = billDto.PayState // PayState se puede establecer después
             };
 
             return _billRepository.Add(bill);
@@ -83,6 +83,25 @@ namespace Aplication.Servicies
 
             _billRepository.Delete(bill);
             return true;
+        }
+        public string ProcessPayment(int idBill)
+        {
+            // Obtiene la factura
+            Bill? bill = _billRepository.GetById(idBill);
+
+            // Verifica si existe la factura
+            if (bill == null)
+            {
+                return "Factura no encontrada.";
+            }
+
+            // Realiza el pago
+            bill.Pay();
+
+            // Actualiza la factura en la base de datos
+            _billRepository.Update(bill);
+
+            return $"El estado de la factura {idBill} es ahora: {bill.PayState}";
         }
     }
 }

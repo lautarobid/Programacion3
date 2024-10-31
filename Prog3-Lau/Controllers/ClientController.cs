@@ -1,9 +1,8 @@
-﻿using Aplication.Dtos;
-using Aplication.Servicies;
-using Application.Services;
+﻿using Application.Services;
+using Aplication.Dtos;
 using Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace Prog3_Lau.Controllers
 {
@@ -23,11 +22,15 @@ namespace Prog3_Lau.Controllers
         [HttpGet("{idClient}")]
         public IActionResult GetById(string idClient)
         {
-            var clientDto = _clientService.GetClientById(idClient);
-            if (clientDto == null)
-                return NotFound(); // Retorna 404 si no se encuentra el cliente
-
-            return Ok(clientDto); // Retorna 200 con los datos del cliente
+            try
+            {
+                var clientDto = _clientService.GetClientById(idClient);
+                return Ok(clientDto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         // Obtener todos los clientes
@@ -35,18 +38,18 @@ namespace Prog3_Lau.Controllers
         public IActionResult GetAll()
         {
             var clients = _clientService.GetAllClients();
-            return Ok(clients); // Retorna 200 con la lista de clientes
+            return Ok(clients);
         }
 
-        // Agregar un nuevo cliente
+        // Agregar un nuevo cliente y devolver el ID
         [HttpPost]
         public IActionResult Add([FromBody] ClientAdd clientAdd)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Retorna 400 si el modelo es inválido
+                return BadRequest(ModelState);
 
-            _clientService.AddClient(clientAdd); // Cambia clientDto por clientAdd
-            return CreatedAtAction(nameof(GetById), new { idClient = clientAdd.IdClient }, clientAdd); // Cambia clientDto por clientAdd
+            var clientId = _clientService.AddClient(clientAdd);
+            return CreatedAtAction(nameof(GetById), new { idClient = clientId }, clientId);
         }
 
         // Actualizar un cliente por ID
@@ -54,13 +57,13 @@ namespace Prog3_Lau.Controllers
         public IActionResult Update(string idClient, [FromBody] ClientDto clientDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState); // Retorna 400 si el modelo es inválido
+                return BadRequest(ModelState);
 
             var result = _clientService.UpdateClient(idClient, clientDto);
             if (!result)
-                return NotFound(); // Retorna 404 si no se encuentra el cliente
+                return NotFound();
 
-            return NoContent(); // Retorna 204 si la actualización fue exitosa
+            return NoContent();
         }
 
         // Eliminar un cliente por ID
@@ -69,9 +72,39 @@ namespace Prog3_Lau.Controllers
         {
             var result = _clientService.DeleteClient(idClient);
             if (!result)
-                return NotFound(); // Retorna 404 si no se encuentra el cliente
+                return NotFound();
 
-            return NoContent(); // Retorna 204 si la eliminación fue exitosa
+            return NoContent();
+        }
+
+        // Obtener los viajes de un cliente
+        [HttpGet("{idClient}/trips")]
+        public IActionResult GetClientTrips(string idClient)
+        {
+            try
+            {
+                var trips = _clientService.GetClientTrips(idClient);
+                return Ok(trips);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        // Agregar un viaje a un cliente
+        [HttpPost("{idClient}/trips")]
+        public IActionResult AddTripToClient(string idClient, [FromBody] Trip newTrip)
+        {
+            try
+            {
+                _clientService.AddTripToClient(idClient, newTrip);
+                return Ok("Viaje agregado exitosamente.");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

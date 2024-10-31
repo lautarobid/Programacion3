@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace Aplication.Dtos
         public required string Password { get; set; }
 
         public required string PayState { get; set; }
+        public float Mount { get; set; }
 
         public ClientAdd() { }
 
@@ -36,6 +38,20 @@ namespace Aplication.Dtos
             Email = email;
             Password = password;
             PayState = payState;
+        }
+        public Client CreateClient(ClientAdd clientAdd)
+        {
+            var client = new Client
+            {
+                IdClient = clientAdd.IdClient,
+                Name = clientAdd.Name,
+                LastName = clientAdd.LastName,
+                Email = clientAdd.Email,
+                Password = clientAdd.Password,
+                Bill = new Bill(clientAdd.Mount) { PayState = clientAdd.PayState }
+            };
+
+            return client;
         }
     }
 }

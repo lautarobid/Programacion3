@@ -65,5 +65,12 @@ namespace Prog3_Lau.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("pay/{idBill}")]
+        public IActionResult PayBill(int idBill)
+        {
+            var result = _billService.ProcessPayment(idBill);
+            return Ok(result);
+        }
     }
 }

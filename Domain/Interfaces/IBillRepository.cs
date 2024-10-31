@@ -5,9 +5,9 @@ namespace Domain.Interfaces
     public interface IBillRepository
     {
         List<Bill> GetAll();
-        Bill? GetById(int idBill);   // Cambia 'string' a 'int' para que coincida con el tipo en el modelo Bill
-        int Add(Bill bill);          // Cambia el tipo de retorno a 'int' en lugar de 'string'
-        void Update(Bill bill);
+        Bill? GetById(int idBill); // Usa este para obtener facturas por ID
+        int Add(Bill bill);
+        void Update(Bill bill); // Usa este para actualizar facturas
         void Delete(Bill bill);
     }
 }
