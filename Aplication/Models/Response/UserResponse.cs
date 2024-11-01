@@ -1,15 +1,13 @@
 ﻿using Domain.Enum;
 
-namespace Domain.Entities
+namespace Aplication.Models.Response
 {
-    public class User
+    public class UserResponse
     {
-        public int Id { get; set; }
         public string? Name { get; set; }
         public string? LastName { get; set; }
         public string? Email { get; set; }
         public string? Dni { get; set; }
-        public string? Password { get; set; }
-        public Role? Role { get; set; }
+        public string Role { get; set; }
     }
 }

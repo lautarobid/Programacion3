@@ -1,77 +1,45 @@
-﻿using Aplication.Dtos;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using Aplication.Models.Request;
+using Aplication.Models.Response;
+using Aplication.Models.Mappings;
 
 namespace Aplication.Servicies
 {
-    public class UserService
+    public class UserService : IUserService
     {
-        // Inyectamos IUserRepository
-        private readonly IUserRepository _userRepository;
+        private readonly IRepositoryBase<User> _userRepositoryBase;
+        private readonly UserMapping _userMapping;
 
-        // Constructor para la inyección de dependencias
-        public UserService(IUserRepository userRepository)
+        public UserService(IRepositoryBase<User> userRepositoryBase, UserMapping userMapping)
         {
-            _userRepository = userRepository;
+            _userRepositoryBase = userRepositoryBase;
+            _userMapping = userMapping;
         }
 
-        // Usamos el repositorio para obtener el usuario por nombre
-        public User? Get(string name)
+
+        public async Task<UserResponse> CreateUserAsync(UserRequest userRequest)
         {
-            return _userRepository.Get(name); // Obtener el usuario desde el repositorio
+            var userEntity = _userMapping.MapToEntity(userRequest);
+            var createdUser = await _userRepositoryBase.AddAsync(userEntity);
+            return _userMapping.MapToResponse(createdUser);
         }
-        public List<User> Get()
+
+
+        public async Task<UserResponse> UpdateUserAsync(int userId, UserRequest userRequest)
         {
-            return _userRepository.Get();
-        }
-        // Agregar un nuevo usuario
-        public int AddUser(UserForAddRequest request)
-        {
-            // Creamos una nueva instancia de User con los datos del DTO
-            var user = new User
+            var existingUser = await _userRepositoryBase.GetByIdAsync(userId);
+            if (existingUser == null)
             {
-                Name = request.Name,
-                LastName = request.LastName,
-                Email = request.Email,
-                Password = request.Password
-            };
-
-            // Llamamos al repositorio para agregar el nuevo usuario
-            return _userRepository.AddUser(user);
-        }
-
-        public bool DeleteUser(int id)
-        {
-            return _userRepository.DeleteUser(id);
-        }
-
-        public UserModel? CheckCredentials(CredentialsRequest credentials)
-        {
-            User? user = Get(credentials.UserName);
-
-            // Verificación de nulidad
-            if (user != null && user.Password == credentials.Password)
-            {
-                return new UserModel()
-                {
-                    UserName = user.Name,      // Inicializar UserName aquí
-                    Password = user.Password,   // Inicializar Password aquí
-                    Email = user.Email,
-                    Id = user.Id,
-                    Name = user.Name,
-                };
+                throw new Exception("Usuario no encontrado.");
             }
-            return null;
+
+            _userMapping.UpdateEntityFromRequest(existingUser, userRequest);
+
+            await _userRepositoryBase.UpdateAsync(existingUser);
+
+            return _userMapping.MapToResponse(existingUser);
         }
+
     }
-
- }
-
-
+}

@@ -1,73 +1,65 @@
-﻿using Aplication.Servicies;
-using Aplication.Dtos;
+﻿using Aplication.Interfaces;
+using Aplication.Models.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Prog3_Lau.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Policy = "ClientOnly")]
     public class TripController : ControllerBase
     {
-        private readonly TripService _tripService;
+        private readonly ITripService _tripService;
 
-        public TripController(TripService tripService)
+        public TripController(ITripService tripService)
         {
             _tripService = tripService;
         }
 
-        // Obtener un viaje por ID
-        [HttpGet("{idTrip:int}")]  // Especifica que idTrip es un int
-        public IActionResult GetTripById(int idTrip)
+        // POST: api/Trip
+        [HttpPost]
+        public async Task<IActionResult> CreateTrip([FromBody] TripRequest tripRequest)
         {
-            var trip = _tripService.GetTripById(idTrip);
-            if (trip == null)
-                return NotFound($"No se encontró un viaje con el ID {idTrip}");
+            var createdTrip = await _tripService.CreateTripAsync(tripRequest);
+            return CreatedAtAction(nameof(GetTripById), new { id = createdTrip.Id }, createdTrip);
+        }
 
+        // PUT: api/Trip/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTrip(int id, [FromBody] TripRequest tripRequest)
+        {
+            var updatedTrip = await _tripService.UpdateTripAsync(id, tripRequest);
+            return Ok(updatedTrip);
+        }
+
+        // GET: api/Trip/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTripById(int id)
+        {
+            var trip = await _tripService.GetTripByIdAsync(id);
+            if (trip == null)
+            {
+                return NotFound();
+            }
             return Ok(trip);
         }
 
-        // Obtener todos los viajes
-        [HttpGet]
-        public IActionResult GetAllTrips()
+        // DELETE: api/Trip/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTrip(int id)
         {
-            var trips = _tripService.GetAllTrips();
-            return Ok(trips);
-        }
-
-        // Agregar un nuevo viaje
-        [HttpPost]
-        public IActionResult AddTrip([FromBody] TripForCreationDto tripDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var createdTripId = _tripService.AddTrip(tripDto);
-            return CreatedAtAction(nameof(GetTripById), new { idTrip = createdTripId }, tripDto);
-        }
-
-        // Actualizar un viaje existente
-        [HttpPut("{idTrip:int}")]
-        public IActionResult UpdateTrip(int idTrip, [FromBody] TripForUpdateDto tripDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = _tripService.UpdateTrip(idTrip, tripDto);
-            if (!result)
-                return NotFound($"No se encontró un viaje con el ID {idTrip}");
-
-            return NoContent();
-        }
-
-        // Eliminar un viaje por ID
-        [HttpDelete("{idTrip:int}")]
-        public IActionResult DeleteTrip(int idTrip)
-        {
-            var result = _tripService.DeleteTrip(idTrip);
-            if (!result)
-                return NotFound($"No se encontró un viaje con el ID {idTrip}");
-
-            return NoContent();
+            try
+            {
+                int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "");
+                await _tripService.DeleteTripAsync(id, userId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

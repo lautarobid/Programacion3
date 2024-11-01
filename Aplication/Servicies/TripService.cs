@@ -1,80 +1,76 @@
-﻿using Aplication.Dtos;
+﻿using Domain.Entities;
 using Domain.Interfaces;
+using Aplication.Models.Request;
+using Aplication.Models.Response;
+using Aplication.Models.Mappings;
+using Aplication.Interfaces;
 
-namespace Aplication.Servicies
+namespace Aplication.Services
 {
-    public class TripService
+    public class TripService : ITripService
     {
+        private readonly IRepositoryBase<Trip> _tripRepositoryBase;
         private readonly ITripRepository _tripRepository;
-
-        public TripService(ITripRepository tripRepository)
+        private readonly TripMapping _tripMapping;
+        public TripService(IRepositoryBase<Trip> tripRepositoryBase, ITripRepository tripRepository, TripMapping tripMapping)
         {
+            _tripRepositoryBase = tripRepositoryBase;
             _tripRepository = tripRepository;
+            _tripMapping = tripMapping;
         }
 
-        // Obtener un viaje por ID
-        public TripDto GetTripById(int idTrip)  // idTrip es de tipo int
+        // Método para crear un nuevo Trip
+        public async Task<TripResponse> CreateTripAsync(TripRequest tripRequest)
         {
-            var trip = _tripRepository.GetById(idTrip);
+            var tripEntity = _tripMapping.MapToEntity(tripRequest);
+            var createdTrip = await _tripRepositoryBase.AddAsync(tripEntity);
+            return _tripMapping.MapToResponse(createdTrip);
+        }
+
+        // Método para editar un Trip existente
+        public async Task<TripResponse> UpdateTripAsync(int tripId, TripRequest tripRequest)
+        {
+            var existingTrip = await _tripRepository.GetTripWithBillsAsync(tripId);
+            if (existingTrip == null)
+            {
+                throw new Exception("Viaje no encontrado.");
+            }
+
+            existingTrip = _tripMapping.MapToExistingEntity(existingTrip, tripRequest);
+            await _tripRepositoryBase.UpdateAsync(existingTrip);
+            return _tripMapping.MapToResponse(existingTrip);
+        }
+
+        // Método para obtener un Trip por ID
+        public async Task<TripResponse> GetTripByIdAsync(int tripId)
+        {
+            var trip = await _tripRepository.GetTripWithBillsAsync(tripId);
             if (trip == null)
-                throw new KeyNotFoundException($"No se encontró un viaje con el ID {idTrip}");
-
-            return ConvertToDto(trip);
-        }
-
-        // Obtener todos los viajes
-        public List<TripDto> GetAllTrips()
-        {
-            var trips = _tripRepository.GetAll();
-            return trips.Select(ConvertToDto).ToList();
-        }
-
-        // Agregar un nuevo viaje
-        public int AddTrip(TripForCreationDto tripDto)
-        {
-            var trip = new Trip
             {
-                Origin = tripDto.Origin,
-                Destination = tripDto.Destination,
-                Cost = tripDto.Cost,
-                DepartureDate = tripDto.DepartureDate
-            };
+                throw new Exception("Viaje no encontrado.");
+            }
 
-            return _tripRepository.AddTrip(trip);  // Retorna el ID del viaje creado
+            return _tripMapping.MapToResponse(trip);
         }
 
-        // Actualizar un viaje existente
-        public bool UpdateTrip(int idTrip, TripForUpdateDto tripDto)
+        // Método para eliminar un Trip por ID
+        public async Task DeleteTripAsync(int tripId, int userId)
         {
-            var existingTrip = _tripRepository.GetById(idTrip);
-            if (existingTrip == null) return false;
+            var trip = await _tripRepositoryBase.GetByIdAsync(tripId);
 
-            existingTrip.Origin = tripDto.Origin;
-            existingTrip.Destination = tripDto.Destination;
-            existingTrip.Cost = tripDto.Cost;
-            existingTrip.DepartureDate = tripDto.DepartureDate;
-
-            _tripRepository.UpdateTrip(existingTrip);
-            return true;
-        }
-
-        // Eliminar un viaje por ID
-        public bool DeleteTrip(int idTrip)
-        {
-            return _tripRepository.DeleteTrip(idTrip);
-        }
-
-        // Método privado para convertir un Trip a TripDto
-        private TripDto ConvertToDto(Trip trip)
-        {
-            return new TripDto
+            if (trip == null)
             {
-                IdTrip = trip.IdTrip,
-                Origin = trip.Origin,
-                Destination = trip.Destination,
-                Cost = trip.Cost,
-                DepartureDate = trip.DepartureDate
-            };
+                throw new Exception("Viaje no encontrado.");
+            }
+
+            // Validar que el viaje pertenece al usuario actual
+            if (trip.ClientId != userId)
+            {
+                throw new Exception("No tienes permiso para eliminar este viaje.");
+            }
+
+            await _tripRepositoryBase.DeleteAsync(trip);
         }
+
     }
 }

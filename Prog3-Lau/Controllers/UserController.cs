@@ -1,8 +1,6 @@
-﻿using Aplication.Dtos;
-using Aplication.Servicies;
-using Domain.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Aplication.Models.Request;
 
 namespace Prog3_Lau.Controllers
 {
@@ -10,30 +8,43 @@ namespace Prog3_Lau.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserService _service;
-        public UserController(UserService service)
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
         {
-            _service = service;
+            _userService = userService;
         }
-        [HttpGet("{name}")]
-        public IActionResult Get([FromRoute] string name)
-        {
-            return Ok(_service.Get(name));
-        }
+
+
         [HttpPost]
-        public IActionResult Add([FromBody] UserForAddRequest body)
+        public async Task<IActionResult> CreateUserAsync([FromBody] UserRequest userRequest)
         {
-            return Ok(_service.AddUser(body));
-        }
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var result = _service.DeleteUser(id);
-            if (result)
+            if (userRequest == null)
             {
-                return NoContent(); // Retorna 204 si se eliminó con éxito
+                return BadRequest("El objeto UserRequest no puede ser nulo.");
             }
-            return NotFound(); // Retorna 404 si no se encontró el usuario
+
+            await _userService.CreateUserAsync(userRequest);
+            return Ok("Usuario creado exitosamente!");
+        }
+
+
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUserAsync(int userId, [FromBody] UserRequest userRequest)
+        {
+            if (userRequest == null)
+            {
+                return BadRequest("El objeto UserRequest no puede ser nulo.");
+            }
+            try
+            {
+                var updatedUser = await _userService.UpdateUserAsync(userId, userRequest);
+                return Ok(updatedUser);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
     }
 }
