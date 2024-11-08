@@ -9,5 +9,6 @@ namespace Aplication.Interfaces
         Task<TripResponse> UpdateTripAsync(int tripId, TripRequest tripRequest);
         Task<TripResponse> GetTripByIdAsync(int tripId);
         Task DeleteTripAsync(int tripId, int userId);
+        Task<List<TripResponse>> GetAllTripsAsync(CancellationToken cancellationToken = default);
     }
 }

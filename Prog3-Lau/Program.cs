@@ -81,6 +81,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<ITripService, TripService>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<ITruckDriverRepository, TruckDriverRepository>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<UserMapping>();
 builder.Services.AddScoped<TripMapping>();

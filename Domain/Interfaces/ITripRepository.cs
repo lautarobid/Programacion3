@@ -1,6 +1,6 @@
 ﻿namespace Domain.Interfaces
 {
-    public interface ITripRepository
+    public interface ITripRepository : IRepositoryBase<Trip>
     {
         Task<Trip?> GetTripWithBillsAsync(int id);
 

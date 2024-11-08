@@ -72,5 +72,11 @@ namespace Aplication.Services
             await _tripRepositoryBase.DeleteAsync(trip);
         }
 
+        // Implementación del nuevo método GetAllTripsAsync
+        public async Task<List<TripResponse>> GetAllTripsAsync(CancellationToken cancellationToken = default)
+        {
+            var trips = await _tripRepository.ListAsync(cancellationToken);
+            return trips.Select(trip => _tripMapping.MapToResponse(trip)).ToList();
+        }
     }
 }
