@@ -8,7 +8,7 @@ namespace Prog3_Lau.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = "ClientOnly")]
+    [Authorize(Policy = "Client")]
     public class TripController : ControllerBase
     {
         private readonly ITripService _tripService;
