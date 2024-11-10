@@ -4,6 +4,7 @@ using Aplication.Services;
 using Aplication.Servicies;
 using Domain.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -83,14 +84,29 @@ builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<ITripService, TripService>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<ITruckDriverRepository, TruckDriverRepository>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddSingleton<BillMapping>();
 builder.Services.AddScoped<ICustomAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<UserMapping>();
 builder.Services.AddScoped<TripMapping>();
 builder.Services.AddScoped<BillMapping>();
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+
 
 builder.Services.Configure<AutenticacionServiceOptions>(
     builder.Configuration.GetSection(AutenticacionServiceOptions.AutenticacionService));
 
+//Habilitar cors
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 // Construir la aplicación después de registrar todos los servicios
 var app = builder.Build();
 
@@ -105,6 +121,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication(); // Asegúrate de que la autenticación esté habilitada antes de usar la autorización
 app.UseAuthorization();
-app.MapControllers();
-
+app.UseCors("AllowAll");
+app.MapControllers(); 
 app.Run();
